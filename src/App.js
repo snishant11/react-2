@@ -45,6 +45,45 @@ function App() {
     });
     return window.removeEventListener("scroll", scrollEvent);
   }, []);
+  //IndexedDB update here
+   useEffect(() => {
+    let dbName = "demo-reactLocalDb";
+    let dbVersion = 1;
+    let dbRequest = window.indexedDB.open(dbName, dbVersion);
+     
+    dbRequest.onupgradeneeded = function (e) {
+      console.log("upgrade needed");
+      let db = e.target.result;
+      db.createObjectStore("events", {
+        keyPath: "id",
+        autoIncrement: true,
+      });
+    };
+
+    dbRequest.onerror = function (e) {
+      console.log("error");
+      console.log(e.target.errorCode);
+    };
+
+    dbRequest.onsuccess = function (e) {
+      console.log("success");
+      //handling database
+      let db = e.target.result;
+      //creating transaction
+      let trans = db.transaction("events", "readwrite");
+
+      let store = trans.objectStore("events");
+
+      console.log(events);
+      events.map((event) => {
+        return store.add(event);
+      });
+    };
+
+    dbRequest.onblocked = function (e) {
+      console.log("hello");
+    };
+  }, [page]);
 
   return (
     <main>
